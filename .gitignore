@@ -1,0 +1,4 @@
+thirdparty/yolov5/weights/best_gazebokinect.pt
+thirdparty/yolov5/weights/best_realkinect.pt
+thirdparty/yolov5/__pycache__/detect.cpython-36.pyc
+thirdparty/__pycache__/__init__.cpython-36.pyc

@@ -84,7 +84,7 @@ class Camera():
         self.sub_depth = message_filters.Subscriber(depth_topic, Image, queue_size = q)
         self.sub_camera_info = message_filters.Subscriber(camera_info_topic, CameraInfo, queue_size = q)
         # self.tss = message_filters.ApproximateTimeSynchronizer([self.sub_rgb, self.sub_depth, self.sub_camera_info], queue_size=15, slop=0.4)
-        self.tss = message_filters.ApproximateTimeSynchronizer([self.sub_rgb, self.sub_depth, self.sub_camera_info], queue_size = 30, slop = 0.5)
+        self.tss = message_filters.ApproximateTimeSynchronizer([self.sub_rgb, self.sub_depth, self.sub_camera_info], queue_size = q, slop = 0.5)
         #self.tss = message_filters.TimeSynchronizer([sub_rgb], 10)
         self.tss.registerCallback(self.callback)
 
@@ -139,7 +139,7 @@ class Camera():
             self.OBlobs_x = []
             self.OBlobs_y = []
             self.OBlobs_z = []
-            ob = None
+            ob, self.sub_rgb, self.sub_depth, self.sub_camera_info = None, None, None, None
 
     def getCam2Worldtf(self):
         """
@@ -311,14 +311,19 @@ class Camera():
         depth_distances = []
         #Small ROI around clicked point grows larger if no depth value found
         for i in range(len(self.xs)):
+            roi = []
             for bbox_width in range(20, int(self.latest_depth_32FC1.shape[0]/3), 5):
                 tl_x = int(clamp(self.xs[i]-bbox_width/2, 0, self.latest_depth_32FC1.shape[0]))
                 br_x = int(clamp(self.xs[i]+bbox_width/2, 0, self.latest_depth_32FC1.shape[0]))
                 tl_y = int(clamp(self.ys[i]-bbox_width/2, 0, self.latest_depth_32FC1.shape[1]))
                 br_y = int(clamp(self.ys[i]+bbox_width/2, 0, self.latest_depth_32FC1.shape[1]))
-                # print('\n x, y, tl_x, tl_y, br_x, br_y: ',(self.xs[i], self.ys[i]), (tl_x, tl_y, br_x, br_y))
-                roi = self.latest_depth_32FC1[tl_y:br_y, tl_x:br_x]
-                depth_distances.append(np.max(roi))
+                # print '\n x, y, tl_x, tl_y, br_x, br_y: ',self.xs[i], self.ys[i], tl_x, tl_y, br_x, br_y
+                roi = (self.latest_depth_32FC1[tl_y:br_y, tl_x:br_x]).copy()
+                # print '\nroi: \n', roi
+                # rospy.sleep(100)
+                if len(roi) > 0:
+                    depth_distances.append(np.max(roi))
+                    # print "\nGot Depth\n"
 
                 if not np.isnan(depth_distances).any():
                     # print "\nNo Nan values in depth values\n"

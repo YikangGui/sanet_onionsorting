@@ -135,7 +135,7 @@ class YOLO():
             
             save_path = str(Path(out) / Path(p).name)
             s += '%gx%g ' % img.shape[2:]  # print string
-            #  normalization gain whwh
+            #  normalization gain whwh
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]
             if det is not None and len(det):
                 # Rescale boxes from img_size to im0s size
