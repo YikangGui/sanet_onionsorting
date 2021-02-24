@@ -31,7 +31,7 @@ class YOLO():
         self.source = '/home/psuresh/catkin_ws/src/sanet_onionsorting/thirdparty/yolov5/inference/images'
         self.output = '/home/psuresh/catkin_ws/src/sanet_onionsorting/thirdparty/yolov5/inference/output'
         self.img_size = 640
-        self.conf_thres = 0.75
+        self.conf_thres = 0.8
         self.iou_thres = 0.5
         self.fourcc = 'mp4v'
         self.device = ''

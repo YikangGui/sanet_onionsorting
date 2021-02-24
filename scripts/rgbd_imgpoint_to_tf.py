@@ -19,6 +19,7 @@ import image_geometry
 import message_filters
 import numpy as np
 from itertools import chain
+from rospy.core import rospyinfo
 from visualization_msgs.msg import Marker
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, CameraInfo
@@ -48,17 +49,28 @@ class Camera():
         self.depth_topic = depth_topic
         self.camera_info_topic = camera_info_topic
         self.choice = choice
-        self.xs = response.centx
-        self.ys = response.centy
-        self.colors = response.color
+        self.pose3D_pub = rospy.Publisher('object_location', OBlobs, queue_size=1)
 
         self.poses = []
         self.rays = []
         self.OBlobs_x = []
         self.OBlobs_y = []
         self.OBlobs_z = []
+        self.colors = []
+        if len(response.centx) > 0:
+            self.xs = response.centx
+            self.ys = response.centy
+            self.colors = response.color
+        else:
+            ob = OBlobs()
+            ob.x = self.OBlobs_x
+            ob.y = self.OBlobs_y
+            ob.z = self.OBlobs_z
+            ob.color = self.colors
+            # print 'Here are the 3D locations: \n', ob
+            self.pose3D_pub.publish(ob)
+            return
 
-        self.pose3D_pub = rospy.Publisher('object_location', OBlobs, queue_size=1)
 
         # self.marker_pub = rospy.Publisher('visualization_marker', Marker, queue_size=10)
         # cv2.namedWindow("Image window", cv2.WINDOW_NORMAL)
@@ -377,16 +389,13 @@ def main():
             print '\nUpdating YOLO predictions...\n'
             gip_service = rospy.ServiceProxy("/get_predictions", yolo_srv)
             response = gip_service()
-            if len(response.centx) > 0:
-                print '\nCentroid of onions: [x1,x2...],[y1,y2...] \n',response.centx, response.centy
-                camera = Camera('kinectv2', rgbtopic, depthtopic, camerainfo, response, choice)
-            else:
-                print '\nWaiting for detections from yolo'
-            rospy.sleep(2)
+            print '\nCentroid of onions: [x1,x2...],[y1,y2...] \n',response.centx, response.centy
+            camera = Camera('kinectv2', rgbtopic, depthtopic, camerainfo, response, choice)
+            # rospy.sleep(0.5)
         # rospy.spin()
 
     except rospy.ROSInterruptException:
-        print("Shutting down")
+        rospy.loginfo("Shutting down")
         cv2.destroyAllWindows()
 
 
