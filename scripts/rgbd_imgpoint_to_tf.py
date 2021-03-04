@@ -145,12 +145,12 @@ class Camera():
             ob.z = self.OBlobs_z
             ob.color = self.colors
             # print 'Here are the 3D locations: \n', ob
-            self.pose3D_pub.publish(ob)
-            self.poses = []
-            self.rays = []  
-            self.OBlobs_x = []
-            self.OBlobs_y = []
-            self.OBlobs_z = []
+            # self.pose3D_pub.publish(ob)
+            # self.poses = []
+            # self.rays = []  
+            # self.OBlobs_x = []
+            # self.OBlobs_y = []
+            # self.OBlobs_z = []
             ob, self.sub_rgb, self.sub_depth, self.sub_camera_info = None, None, None, None
 
     def getCam2Worldtf(self):

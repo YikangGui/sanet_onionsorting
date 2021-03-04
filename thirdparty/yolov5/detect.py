@@ -10,26 +10,20 @@ import torch.backends.cudnn as cudnn
 
 import time
 
-import sys
-sys.path.append('/home/psuresh/catkin_ws/src/sanet_onionsorting/thirdparty/yolov5')
-'''
-NOTE: When accessing this file via ROS, it doesn't seem to find the directories without
-specifying an absolute path. If you're reading this and know of a way to get
-relative paths working, feel free to change it.
-'''
-from utils import google_utils
-from utils.datasets import *
-from utils import torch_utils
-from utils.utils import *
-
-sys.path.remove('/home/psuresh/catkin_ws/src/sanet_onionsorting/thirdparty/yolov5')
+import rospkg
+from yolov5.utils import google_utils
+from yolov5.utils.datasets import *
+from yolov5.utils import torch_utils
+from yolov5.utils.utils import *
 
 class YOLO():
     def __init__(self, weightsfile = 'best_realkinect.pt'):
         
-        self.weights = '/home/psuresh/catkin_ws/src/sanet_onionsorting/thirdparty/yolov5/weights/'+ weightsfile
-        self.source = '/home/psuresh/catkin_ws/src/sanet_onionsorting/thirdparty/yolov5/inference/images'
-        self.output = '/home/psuresh/catkin_ws/src/sanet_onionsorting/thirdparty/yolov5/inference/output'
+        rospack = rospkg.RosPack()  # get an instance of RosPack with the default search paths
+        path = rospack.get_path('sanet_onionsorting')   # get the file path for sanet_onionsorting
+        self.weights = path + '/thirdparty/yolov5/weights/'+ weightsfile
+        self.source = path + '/thirdparty/yolov5/inference/images'
+        self.output = path + '/thirdparty/yolov5/inference/output'
         self.img_size = 640
         self.conf_thres = 0.8
         self.iou_thres = 0.5

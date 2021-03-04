@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf8
 import sys
+from time import time
 
 # append py2 in order to import rospy
 sys.path.append('/usr/lib/python2.7/dist-packages')
@@ -12,9 +13,13 @@ sys.path.remove('/usr/lib/python2.7/dist-packages')
 from sanet_onionsorting.srv import yolo_srv
 import numpy as np
 import copy
-sys.path.append('/home/psuresh/catkin_ws/src/sanet_onionsorting/')
-from thirdparty.yolov5.detect import YOLO
-from time import time
+import rospkg
+
+rospack = rospkg.RosPack()  # get an instance of RosPack with the default search paths
+path = rospack.get_path('sanet_onionsorting')   # get the file path for sanet_onionsorting
+sys.path.append(path + '/thirdparty/')
+from yolov5.detect import YOLO
+
 same_flag = 0
 rgb_mem = None
 depth_mem = None

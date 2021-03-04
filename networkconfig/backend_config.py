@@ -1,13 +1,14 @@
 #! /usr/bin/python
 import os
-
+rospack = rospkg.RosPack()  # get an instance of RosPack with the default search paths
+path = rospack.get_path('sanet_onionsorting')   # get the file path for sanet_onionsorting
 class configs_raw:
     # Paths
     datapath = "data/Action_Data"
     model_path = "sanet_onionsorting/snapshot/nnn_kfold_1.h5"
     model_path_kfold = "sanet_onionsorting/snapshot/kfold/nnn_kfold_"
     datapath_test = "sanet_onionsorting/data/Action_Data_Test"
-    checkpoint_folder = "/home/psuresh/catkin_ws/src/sanet_onionsorting/checkpoint"
+    checkpoint_folder = path + "/checkpoint"
     logs_dir = "logs/"
     INPUT_SHAPE_STATE = (480, 640, 4)
     # Samples x Height x Width x Channel ||| Here Channel = Red,Green,Blue,Depth

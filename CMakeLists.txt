@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(sanet_onionsorting)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -159,6 +159,13 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
+file(GLOB python_scripts_DIR
+    "scripts/*.py"
+)
+
+catkin_install_python(PROGRAMS ${python_scripts_DIR} DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(DIRECTORY thirdparty DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
 # catkin_install_python(PROGRAMS
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

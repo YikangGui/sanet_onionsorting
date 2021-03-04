@@ -16,8 +16,11 @@ from tqdm import tqdm
 
 
 import sys
-sys.path.append('/home/psuresh/catkin_ws/src/sanet_onionsorting/thirdparty/yolov5')
+import rospkg
 
+rospack = rospkg.RosPack()  # get an instance of RosPack with the default search paths
+path = rospack.get_path('sanet_onionsorting')   # get the file path for sanet_onionsorting
+sys.path.append(path + '/thirdparty/yolov5')
 from utils.utils import xyxy2xywh, xywh2xyxy
 
 help_url = 'https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data'
