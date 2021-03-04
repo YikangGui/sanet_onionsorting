@@ -57,19 +57,24 @@ class Camera():
         self.OBlobs_y = []
         self.OBlobs_z = []
         self.colors = []
-        if len(response.centx) > 0:
-            self.xs = response.centx
-            self.ys = response.centy
-            self.colors = response.color
-        else:
-            ob = OBlobs()
-            ob.x = self.OBlobs_x
-            ob.y = self.OBlobs_y
-            ob.z = self.OBlobs_z
-            ob.color = self.colors
-            # print 'Here are the 3D locations: \n', ob
-            self.pose3D_pub.publish(ob)
-            return
+        if len(response.centx) == 1 and response.centx[0] == -1:
+	            # If no objects are found in the image
+	            ob = OBlobs()
+	            ob.x = self.OBlobs_x
+	            ob.y = self.OBlobs_y
+	            ob.z = self.OBlobs_z
+	            ob.color = self.colors
+	            print '\nNo onions found in the frame\n'
+	            self.pose3D_pub.publish(ob)
+	            # rospy.sleep(1)
+	            return
+	            
+	        else:
+	            print '\n{0} onions found in the frame\n'.format(len(response.centx))
+	            self.xs = response.centx
+	            self.ys = response.centy
+	            self.colors = response.color
+	
 
 
         # self.marker_pub = rospy.Publisher('visualization_marker', Marker, queue_size=10)
@@ -145,7 +150,7 @@ class Camera():
             ob.z = self.OBlobs_z
             ob.color = self.colors
             # print 'Here are the 3D locations: \n', ob
-            # self.pose3D_pub.publish(ob)
+            self.pose3D_pub.publish(ob)
             # self.poses = []
             # self.rays = []  
             # self.OBlobs_x = []
@@ -170,10 +175,10 @@ class Camera():
             # print "\nCamerapoint: \n", camerapoint
             tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0)) # tf buffer length
             tf_listener = tf2_ros.TransformListener(tf_buffer)
-            cam_to_root_tf = tf_buffer.lookup_transform("root",
-                                        self.get_tf_frame(), #source frame
-                                        rospy.Time(0), # get the tf at first available time
-                                        rospy.Duration(1.0)) # wait for 1 second
+            cam_to_root_tf = tf_buffer.lookup_transform("root", #target frame
+	                                        self.get_tf_frame(), #source frame
+	                                        rospy.Time(0), # get the tf at first available time
+	                                        rospy.Duration(1.0)) # wait for 1 second for target frame to become available
             tf_point = tf2_geometry_msgs.do_transform_pose(camerapoint, cam_to_root_tf)
             # print '3D pose wrt world: ', tf_point
 
@@ -391,7 +396,7 @@ def main():
             response = gip_service()
             print '\nCentroid of onions: [x1,x2...],[y1,y2...] \n',response.centx, response.centy
             camera = Camera('kinectv2', rgbtopic, depthtopic, camerainfo, response, choice)
-            # rospy.sleep(0.5)
+            rospy.sleep(0.5)
         # rospy.spin()
 
     except rospy.ROSInterruptException:

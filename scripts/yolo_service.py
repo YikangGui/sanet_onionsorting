@@ -47,30 +47,37 @@ def getpred(msg):
         # print("\nThis image shape: \n",np.shape(thisimage))
         output = y.detect(rgb_mem)
         # print('output:   ',output)
-        if output is not None and len(output) > 0:   
-            for det in output:
-                for *xyxy, conf, cls in det:
-                    ''' 
-                    NOTE: Useful link: https://miro.medium.com/max/597/1*85uPFWLrdVejJkWeie7cGw.png
-                    Kinect image resolution is (1920,1080)
-                    But numpy image shape is (1080,1920) becasue np takes image in the order height x width.
-                    '''
-                    tlx, tly, brx, bry = int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3])
-                    centx, centy = int((tlx+brx)/2), int((tly+bry)/2)
-                    if int(cls) == 0 or int(cls) == 1: 
-                        print("\ntlx, tly, brx, bry, cls: ",tlx, tly, brx, bry, int(cls))
-                        print(f"\nCentroid: {centx}, {centy}")
-                        centxs.append(centx)
-                        centys.append(centy)
-                        colors.append(cls)
-                    else:   pass
+        if output is not None:
+            if len(output) > 0:   
+                for det in output:
+                    for *xyxy, conf, cls in det:
+                        ''' 
+                        NOTE: Useful link: https://miro.medium.com/max/597/1*85uPFWLrdVejJkWeie7cGw.png
+                        Kinect image resolution is (1920,1080)
+                        But numpy image shape is (1080,1920) becasue np takes image in the order height x width.
+                        '''
+                        tlx, tly, brx, bry = int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3])
+                        centx, centy = int((tlx+brx)/2), int((tly+bry)/2)
+                        if int(cls) == 0 or int(cls) == 1: 
+                            # print("\ntlx, tly, brx, bry, cls: ",tlx, tly, brx, bry, int(cls))
+                            # print(f"\nCentroid: {centx}, {centy}")
+                            centxs.append(centx)
+                            centys.append(centy)
+                            colors.append(cls)
+                        else:   pass
+            else: pass   
         else: print("\nNo output from yolo received yet\n")
         rgb_mem = None
         print("\nTime taken by yolo is: ", time() - start_time)
-        return centxs,centys,colors
+        if len(centxs) > 0:
+            print(f"\nFound {len(centxs)} onions\n")
+            return centxs,centys,colors
+        else:
+            print("\nNo onions detected in frame\n")
+            return [-1], [-1], [-1]
     else:
         print("\nNo RGB image received yet\n")
-        return None, None,None
+        return None, None, None
 
 
 def main():
@@ -108,6 +115,7 @@ def main():
     except KeyboardInterrupt:
         return
     rospy.spin()
+
 
 
 if __name__ == '__main__':    
