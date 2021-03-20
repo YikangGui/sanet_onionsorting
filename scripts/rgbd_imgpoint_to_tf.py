@@ -49,8 +49,7 @@ class Camera():
         self.depth_topic = depth_topic
         self.camera_info_topic = camera_info_topic
         self.choice = choice
-        self.pose3D_pub = rospy.Publisher(
-            'object_location', OBlobs, queue_size=1)
+        self.pose3D_pub = rospy.Publisher('object_location', OBlobs, queue_size=1)
 
         self.poses = []
         self.rays = []
@@ -62,13 +61,13 @@ class Camera():
         if len(response.centx) == 1 and response.centx[0] == -1:
             # If no objects are found in the image
             ob = OBlobs()
-            ob.x = self.OBlobs_x
-            ob.y = self.OBlobs_y
-            ob.z = self.OBlobs_z
-            ob.color = self.colors
-            print '\nNo onions found in the frame\n'
+            ob.x = [-100]
+            ob.y = [-100]
+            ob.z = [-100]
+            ob.color = [-100]
             self.pose3D_pub.publish(ob)
-            # rospy.sleep(1)
+            rospy.sleep(0.1)
+            print '\nNo onions found in the frame\n'
             return
 
         else:
@@ -145,7 +144,7 @@ class Camera():
 
         if len(self.poses) > 0:
 
-            print '\nWhy tf am I coming in here?? What in 7 hells is wrong with me?\n'
+            # print '\nWhy tf am I coming in here?? What in 7 hells is wrong with me?\n'
             self.getCam2Worldtf()
 
             # self.br.sendTransform(self.pose,(0,0,0,1),rospy.Time.now(),"clicked_object",self.camera_model.tfFrame())
@@ -157,6 +156,7 @@ class Camera():
             ob.color = self.colors
             # print '\nHere are the 3D locations: \n', ob
             self.pose3D_pub.publish(ob)
+            rospy.sleep(0.1)
             self.is_updated = True
             # print '\nCamera is_updated inside callback: ', self.is_updated
             self.poses = []

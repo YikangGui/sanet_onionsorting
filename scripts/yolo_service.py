@@ -41,7 +41,7 @@ def getpred(msg):
     centxs = []
     centys = []
     colors = []
-    y = YOLO(weights)
+    y = YOLO(weights, conf_thres = 0.6)
     if rgb_mem is not None: 
         # thisimage = np.frombuffer(rgb_mem.data, dtype=np.uint8).reshape(rgb_mem.height, rgb_mem.width, -1).astype('float32')
         # print("\nThis image shape: \n",np.shape(thisimage))
@@ -109,6 +109,7 @@ def main():
             print(f"Unknown choice: {choice}. Please choose between real and gazebo.")
 
         service = rospy.Service("/get_predictions", yolo_srv, getpred)
+
     except rospy.ROSInterruptException:
         print(rospy.ROSInterruptException)
         return

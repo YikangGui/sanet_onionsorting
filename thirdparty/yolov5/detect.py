@@ -17,7 +17,7 @@ from yolov5.utils import torch_utils
 from yolov5.utils.utils import *
 
 class YOLO():
-    def __init__(self, weightsfile = 'best_realkinect.pt'):
+    def __init__(self, weightsfile = 'best_realkinect.pt', conf_thres = 0.8):
         
         rospack = rospkg.RosPack()  # get an instance of RosPack with the default search paths
         path = rospack.get_path('sanet_onionsorting')   # get the file path for sanet_onionsorting
@@ -25,7 +25,7 @@ class YOLO():
         self.source = path + '/thirdparty/yolov5/inference/images'
         self.output = path + '/thirdparty/yolov5/inference/output'
         self.img_size = 640
-        self.conf_thres = 0.8
+        self.conf_thres = conf_thres
         self.iou_thres = 0.5
         self.fourcc = 'mp4v'
         self.device = ''
