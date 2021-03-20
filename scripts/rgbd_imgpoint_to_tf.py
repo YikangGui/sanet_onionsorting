@@ -32,7 +32,7 @@ from sanet_onionsorting.srv import yolo_srv
 
 
 class Camera():
-    def __init__(self, camera_name, rgb_topic, depth_topic, camera_info_topic, response = None, choice = None):
+    def __init__(self, camera_name, rgb_topic, depth_topic, camera_info_topic, response=None, choice=None):
         """
         @brief      A class to obtain time synchronized RGB and Depth frames from a camera topic and find the
                     3D position of the point wrt the required frame of reference.
@@ -49,7 +49,8 @@ class Camera():
         self.depth_topic = depth_topic
         self.camera_info_topic = camera_info_topic
         self.choice = choice
-        self.pose3D_pub = rospy.Publisher('object_location', OBlobs, queue_size=1)
+        self.pose3D_pub = rospy.Publisher(
+            'object_location', OBlobs, queue_size=1)
 
         self.poses = []
         self.rays = []
@@ -57,25 +58,24 @@ class Camera():
         self.OBlobs_y = []
         self.OBlobs_z = []
         self.colors = []
+        self.is_updated = False
         if len(response.centx) == 1 and response.centx[0] == -1:
-	            # If no objects are found in the image
-	            ob = OBlobs()
-	            ob.x = self.OBlobs_x
-	            ob.y = self.OBlobs_y
-	            ob.z = self.OBlobs_z
-	            ob.color = self.colors
-	            print '\nNo onions found in the frame\n'
-	            self.pose3D_pub.publish(ob)
-	            # rospy.sleep(1)
-	            return
-	            
-	        else:
-	            print '\n{0} onions found in the frame\n'.format(len(response.centx))
-	            self.xs = response.centx
-	            self.ys = response.centy
-	            self.colors = response.color
-	
+            # If no objects are found in the image
+            ob = OBlobs()
+            ob.x = self.OBlobs_x
+            ob.y = self.OBlobs_y
+            ob.z = self.OBlobs_z
+            ob.color = self.colors
+            print '\nNo onions found in the frame\n'
+            self.pose3D_pub.publish(ob)
+            # rospy.sleep(1)
+            return
 
+        else:
+            print '\n{0} onions found in the frame\n'.format(len(response.centx))
+            self.xs = response.centx
+            self.ys = response.centy
+            self.colors = response.color
 
         # self.marker_pub = rospy.Publisher('visualization_marker', Marker, queue_size=10)
         # cv2.namedWindow("Image window", cv2.WINDOW_NORMAL)
@@ -93,15 +93,20 @@ class Camera():
 
         self.camera_model = image_geometry.PinholeCameraModel()
 
-        rospy.loginfo('Camera {} initialised, {}, {}, {}'.format(self.camera_name, rgb_topic, depth_topic, camera_info_topic))
+        rospy.loginfo('Camera {} initialised, {}, {}, {}'.format(
+            self.camera_name, rgb_topic, depth_topic, camera_info_topic))
 
         q = 25
 
-        self.sub_rgb = message_filters.Subscriber(rgb_topic, Image, queue_size = q)
-        self.sub_depth = message_filters.Subscriber(depth_topic, Image, queue_size = q)
-        self.sub_camera_info = message_filters.Subscriber(camera_info_topic, CameraInfo, queue_size = q)
+        self.sub_rgb = message_filters.Subscriber(
+            rgb_topic, Image, queue_size=q)
+        self.sub_depth = message_filters.Subscriber(
+            depth_topic, Image, queue_size=q)
+        self.sub_camera_info = message_filters.Subscriber(
+            camera_info_topic, CameraInfo, queue_size=q)
         # self.tss = message_filters.ApproximateTimeSynchronizer([self.sub_rgb, self.sub_depth, self.sub_camera_info], queue_size=15, slop=0.4)
-        self.tss = message_filters.ApproximateTimeSynchronizer([self.sub_rgb, self.sub_depth, self.sub_camera_info], queue_size = q, slop = 0.5)
+        self.tss = message_filters.ApproximateTimeSynchronizer(
+            [self.sub_rgb, self.sub_depth, self.sub_camera_info], queue_size=q, slop=0.5)
         #self.tss = message_filters.TimeSynchronizer([sub_rgb], 10)
         self.tss.registerCallback(self.callback)
 
@@ -140,6 +145,7 @@ class Camera():
 
         if len(self.poses) > 0:
 
+            print '\nWhy tf am I coming in here?? What in 7 hells is wrong with me?\n'
             self.getCam2Worldtf()
 
             # self.br.sendTransform(self.pose,(0,0,0,1),rospy.Time.now(),"clicked_object",self.camera_model.tfFrame())
@@ -149,38 +155,43 @@ class Camera():
             ob.y = self.OBlobs_y
             ob.z = self.OBlobs_z
             ob.color = self.colors
-            # print 'Here are the 3D locations: \n', ob
+            # print '\nHere are the 3D locations: \n', ob
             self.pose3D_pub.publish(ob)
-            # self.poses = []
-            # self.rays = []  
-            # self.OBlobs_x = []
-            # self.OBlobs_y = []
-            # self.OBlobs_z = []
+            self.is_updated = True
+            # print '\nCamera is_updated inside callback: ', self.is_updated
+            self.poses = []
+            self.rays = []
+            self.OBlobs_x = []
+            self.OBlobs_y = []
+            self.OBlobs_z = []
             ob, self.sub_rgb, self.sub_depth, self.sub_camera_info = None, None, None, None
+            return
 
     def getCam2Worldtf(self):
         """
         @brief  Transforms 3D point in the camera frame to world frame 
                 by listening to static transform between camera and world.
         """
-    
+
         # print "\n Camera frame is: ",self.get_tf_frame()
         for i in range(len(self.poses)):
-            camerapoint =  tf2_geometry_msgs.tf2_geometry_msgs.PoseStamped()
+            camerapoint = tf2_geometry_msgs.tf2_geometry_msgs.PoseStamped()
             camerapoint.header.frame_id = self.get_tf_frame()
             camerapoint.header.stamp = rospy.Time(0)
-            camerapoint.pose.position.x = self.poses[i][0]   
-            camerapoint.pose.position.y = self.poses[i][1]   
+            camerapoint.pose.position.x = self.poses[i][0]
+            camerapoint.pose.position.y = self.poses[i][1]
             camerapoint.pose.position.z = self.poses[i][2]
             # print "\nCamerapoint: \n", camerapoint
-            tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0)) # tf buffer length
+            tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0))  # tf buffer length
             tf_listener = tf2_ros.TransformListener(tf_buffer)
-            cam_to_root_tf = tf_buffer.lookup_transform("root", #target frame
-	                                        self.get_tf_frame(), #source frame
-	                                        rospy.Time(0), # get the tf at first available time
-	                                        rospy.Duration(1.0)) # wait for 1 second for target frame to become available
-            tf_point = tf2_geometry_msgs.do_transform_pose(camerapoint, cam_to_root_tf)
-            # print '3D pose wrt world: ', tf_point
+            cam_to_root_tf = tf_buffer.lookup_transform("root",  # target frame
+                                                        self.get_tf_frame(),  # source frame
+                                                        # get the tf at first available time
+                                                        rospy.Time(0),
+                                                        rospy.Duration(1.0))  # wait for 1 second for target frame to become available
+            tf_point = tf2_geometry_msgs.do_transform_pose(
+                camerapoint, cam_to_root_tf)
+            # print '\n3D pose wrt world: ', tf_point
 
             self.OBlobs_x.append(tf_point.pose.position.x)
             self.OBlobs_y.append(tf_point.pose.position.y)
@@ -194,7 +205,8 @@ class Camera():
         @return Rectified image.
         """
         output_img = np.ndarray(self.get_current_raw_image().shape)
-        self.camera_model.rectifyImage(self.get_current_raw_image(), output_img)
+        self.camera_model.rectifyImage(
+            self.get_current_raw_image(), output_img)
         return output_img
 
     def get_tf_frame(self):
@@ -245,7 +257,7 @@ class Camera():
         # marker_msg.header.frame_id = frame_id
         # marker_msg.id = 0 #Marker unique ID
 
-        ## ARROW:0, CUBE:1, SPHERE:2, CYLINDER:3, LINE_STRIP:4, LINE_LIST:5, CUBE_LIST:6, SPHERE_LIST:7, POINTS:8, TEXT_VIEW_FACING:9, MESH_RESOURCE:10, TRIANGLE_LIST:11
+        # ARROW:0, CUBE:1, SPHERE:2, CYLINDER:3, LINE_STRIP:4, LINE_LIST:5, CUBE_LIST:6, SPHERE_LIST:7, POINTS:8, TEXT_VIEW_FACING:9, MESH_RESOURCE:10, TRIANGLE_LIST:11
         # marker_msg.type = 2
         # marker_msg.lifetime = 1
         # marker_msg.pose.position = pose_3D
@@ -278,7 +290,7 @@ class Camera():
         @return     Orthogonal ray and 3D pose wrt camera.
         """
         ray = self.get_ray(uv_rect)
-        pose = self.get_position_from_ray(ray,depth)
+        pose = self.get_position_from_ray(ray, depth)
         return ray, pose
 
     def mouse_callback(self, event, x, y, flags, param):
@@ -295,14 +307,18 @@ class Camera():
         if event == cv2.EVENT_LBUTTONDOWN:
 
             # clamp a number to be within a specified range
-            clamp = lambda n, minn, maxn: max(min(maxn, n), minn)
+            def clamp(n, minn, maxn): return max(min(maxn, n), minn)
 
-            #Small ROI around clicked point grows larger if no depth value found
+            # Small ROI around clicked point grows larger if no depth value found
             for bbox_width in range(20, int(self.latest_depth_32FC1.shape[0]/3), 5):
-                tl_x = clamp(x-bbox_width/2, 0, self.latest_depth_32FC1.shape[0])
-                br_x = clamp(x+bbox_width/2, 0, self.latest_depth_32FC1.shape[0])
-                tl_y = clamp(y-bbox_width/2, 0, self.latest_depth_32FC1.shape[1])
-                br_y = clamp(y+bbox_width/2, 0, self.latest_depth_32FC1.shape[1])
+                tl_x = clamp(x-bbox_width/2, 0,
+                             self.latest_depth_32FC1.shape[0])
+                br_x = clamp(x+bbox_width/2, 0,
+                             self.latest_depth_32FC1.shape[0])
+                tl_y = clamp(y-bbox_width/2, 0,
+                             self.latest_depth_32FC1.shape[1])
+                br_y = clamp(y+bbox_width/2, 0,
+                             self.latest_depth_32FC1.shape[1])
                 # print('\n x, y, tl_x, tl_y, br_x, br_y: ',(x, y), (tl_x, tl_y, br_x, br_y))
                 roi = self.latest_depth_32FC1[tl_y:br_y, tl_x:br_x]
                 depth_distance = np.median(roi)
@@ -312,7 +328,7 @@ class Camera():
 
             # print('distance (crowflies) from camera to point: {:.2f}m'.format(depth_distance))
             self.ray, self.pose = self.process_ray((x, y), depth_distance)
-            print "\n3D pose wrt camera: \n", self.pose
+            # print "\n3D pose wrt camera: \n", self.pose
             if self.choice == "real":
                 ''' NOTE: The Real Kinect produces values in mm while ROS operates in m. '''
                 self.poses.append(np.array(self.pose)/1000)
@@ -324,16 +340,20 @@ class Camera():
         @brief  Converts the point(s) provided as input into 3D coordinates wrt camera.
         """
         # clamp a number to be within a specified range
-        clamp = lambda n, minn, maxn: max(min(maxn, n), minn)
+        def clamp(n, minn, maxn): return max(min(maxn, n), minn)
         depth_distances = []
-        #Small ROI around clicked point grows larger if no depth value found
+        # Small ROI around clicked point grows larger if no depth value found
         for i in range(len(self.xs)):
             roi = []
             for bbox_width in range(20, int(self.latest_depth_32FC1.shape[0]/3), 5):
-                tl_x = int(clamp(self.xs[i]-bbox_width/2, 0, self.latest_depth_32FC1.shape[0]))
-                br_x = int(clamp(self.xs[i]+bbox_width/2, 0, self.latest_depth_32FC1.shape[0]))
-                tl_y = int(clamp(self.ys[i]-bbox_width/2, 0, self.latest_depth_32FC1.shape[1]))
-                br_y = int(clamp(self.ys[i]+bbox_width/2, 0, self.latest_depth_32FC1.shape[1]))
+                tl_x = int(clamp(self.xs[i]-bbox_width/2,
+                                 0, self.latest_depth_32FC1.shape[0]))
+                br_x = int(clamp(self.xs[i]+bbox_width/2,
+                                 0, self.latest_depth_32FC1.shape[0]))
+                tl_y = int(clamp(self.ys[i]-bbox_width/2,
+                                 0, self.latest_depth_32FC1.shape[1]))
+                br_y = int(clamp(self.ys[i]+bbox_width/2,
+                                 0, self.latest_depth_32FC1.shape[1]))
                 # print '\n x, y, tl_x, tl_y, br_x, br_y: ',self.xs[i], self.ys[i], tl_x, tl_y, br_x, br_y
                 roi = (self.latest_depth_32FC1[tl_y:br_y, tl_x:br_x]).copy()
                 # print '\nroi: \n', roi
@@ -348,15 +368,18 @@ class Camera():
 
         # print('distance (crowflies) from camera to point: {}m'.format(depth_distances))
         for i in range(len(self.xs)):
-            ray, pose = self.process_ray((self.xs[i], self.ys[i]), depth_distances[i])
+            ray, pose = self.process_ray(
+                (self.xs[i], self.ys[i]), depth_distances[i])
             if self.choice == "real":
                 ''' NOTE: The Real Kinect produces values in mm while ROS operates in m. '''
-                self.rays.append(np.array(ray)/1000); 
+                self.rays.append(np.array(ray)/1000)
                 self.poses.append(np.array(pose)/1000)
             else:
-                self.rays.append(ray); self.poses.append(pose)
-	# print '(x,y): ',self.x,self.y
-	# print '3D pose: ', self.pose
+                self.rays.append(ray)
+                self.poses.append(pose)
+        # print '\n(x,y): ',self.xs,self.ys
+        # print '\n3D pose: ', self.poses
+
 
 def main():
     """
@@ -368,10 +391,11 @@ def main():
 
         rospy.init_node('depth_from_object', anonymous=True)
         rate = rospy.Rate(10)
-        rospy.wait_for_service("/get_predictions")  # Contains the centroids of the obj bounding boxes
+        # Contains the centroids of the obj bounding boxes
+        rospy.wait_for_service("/get_predictions")
 
         if len(sys.argv) < 2:
-            print "Default choice real kinect chosen" 
+            print "Default choice real kinect chosen"
             choice = "real"
         else:
             choice = sys.argv[1]
@@ -394,8 +418,9 @@ def main():
             print '\nUpdating YOLO predictions...\n'
             gip_service = rospy.ServiceProxy("/get_predictions", yolo_srv)
             response = gip_service()
-            print '\nCentroid of onions: [x1,x2...],[y1,y2...] \n',response.centx, response.centy
-            camera = Camera('kinectv2', rgbtopic, depthtopic, camerainfo, response, choice)
+            print '\nCentroid of onions: [x1,x2...],[y1,y2...] \n', response.centx, response.centy
+            camera = Camera('kinectv2', rgbtopic, depthtopic,
+                            camerainfo, response, choice)
             rospy.sleep(0.5)
         # rospy.spin()
 
@@ -404,5 +429,5 @@ def main():
         cv2.destroyAllWindows()
 
 
-if __name__ == '__main__':    
+if __name__ == '__main__':
     main()

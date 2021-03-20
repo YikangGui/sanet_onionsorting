@@ -125,7 +125,8 @@ class YOLO():
             else:
                 p, s, im0 = path, '', im0s
 
-            self.bounding_boxes.append(det)
+            if det != None:
+                self.bounding_boxes.append(det)
             
             save_path = str(Path(out) / Path(p).name)
             s += '%gx%g ' % img.shape[2:]  # print string
