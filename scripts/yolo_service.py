@@ -41,7 +41,7 @@ def getpred(msg):
     centxs = []
     centys = []
     colors = []
-    y = YOLO(weights, conf_thres = 0.6)
+    y = YOLO(weights, conf_thres = 0.8)
     if rgb_mem is not None: 
         # thisimage = np.frombuffer(rgb_mem.data, dtype=np.uint8).reshape(rgb_mem.height, rgb_mem.width, -1).astype('float32')
         # print("\nThis image shape: \n",np.shape(thisimage))
