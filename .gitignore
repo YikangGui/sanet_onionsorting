@@ -3,3 +3,4 @@ thirdparty/yolov5/weights/best_realkinect.pt
 thirdparty/yolov5/__pycache__/detect.cpython-36.pyc
 thirdparty/__pycache__/__init__.cpython-36.pyc
 thirdparty/yolov5/weights/best_realkinect_old.pt
+thirdparty/yolov5/weights/best_realkinect_new.pt

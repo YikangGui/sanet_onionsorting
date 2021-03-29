@@ -117,7 +117,12 @@ class YOLO():
         if classify:
             pred = apply_classifier(pred, modelc, img, im0s)
             
-        print('**** pred: ',pred)
+        # print('**** pred: ',pred)
+        ''' Sorting the bounding boxes according to ascending x values ''' 
+        pred[0] = pred[0].numpy()
+        pred[0] = pred[0][pred[0][:,0].argsort()]
+        pred[0] = torch.from_numpy(pred[0])
+        print('**** Sorted pred: \n',pred)
         # Process detections
         for i, det in enumerate(pred):  # detections per image
             if webcam:  # batch_size >= 1

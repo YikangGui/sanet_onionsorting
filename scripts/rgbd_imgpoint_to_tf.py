@@ -112,7 +112,7 @@ class Camera():
             print '\nNo onions found in the frame\n'
             return
         else:
-            print '\n{0} onions found in the frame\n'.format(len(response.centx))
+            print '\nProcessing {0} onions info\n'.format(len(response.centx))
             self.xs = response.centx
             self.ys = response.centy
             self.colors = response.color
