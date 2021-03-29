@@ -48,7 +48,6 @@ class Camera():
         self.depth_topic = depth_topic
         self.camera_info_topic = camera_info_topic
         self.choice = choice
-        self.pose3D_pub = rospy.Publisher('object_location', OBlobs, queue_size=1)
 
         self.poses = []
         self.rays = []
@@ -69,8 +68,6 @@ class Camera():
 
         self.camera_model = image_geometry.PinholeCameraModel()
 
-        rospy.loginfo('Camera {} initialised, {}, {}, {}'.format(
-            self.camera_name, rgb_topic, depth_topic, camera_info_topic))
 
         # self.marker_pub = rospy.Publisher('visualization_marker', Marker, queue_size=10)
         # cv2.namedWindow("Image window", cv2.WINDOW_NORMAL)
@@ -79,8 +76,9 @@ class Camera():
         # self.lis = tf.TransformListener()
         # # Have we processed the camera_info and image yet?
         # self.ready_ = False
+        q = 1
 
-        q = 25
+        self.pose3D_pub = rospy.Publisher('object_location', OBlobs, queue_size=q)
 
         self.sub_rgb = message_filters.Subscriber(rgb_topic, Image, queue_size=q)
 
@@ -89,9 +87,11 @@ class Camera():
         self.sub_camera_info = message_filters.Subscriber(camera_info_topic, CameraInfo, queue_size=q)
         # self.tss = message_filters.ApproximateTimeSynchronizer([self.sub_rgb, self.sub_depth, self.sub_camera_info], queue_size=15, slop=0.4)
         self.tss = message_filters.ApproximateTimeSynchronizer(
-            [self.sub_rgb, self.sub_depth, self.sub_camera_info], queue_size=q, slop=0.5)
+            [self.sub_rgb, self.sub_depth, self.sub_camera_info], queue_size = q, slop = 0.5)
         #self.tss = message_filters.TimeSynchronizer([sub_rgb], 10)
         self.tss.registerCallback(self.callback)
+
+        rospy.loginfo('Camera {} initialised, {}, {}, {}'.format(self.camera_name, rgb_topic, depth_topic, camera_info_topic))
 
     def save_response(self, response):
         '''
@@ -161,7 +161,7 @@ class Camera():
 
         self.convertto3D()
 
-        print "\nLen of poses is: ",len(self.poses)
+        # print "\nLen of poses is: ",len(self.poses)
 
         if len(self.poses) > 0:
 
@@ -380,7 +380,7 @@ class Camera():
                 roi = (self.latest_depth_32FC1[tl_y:br_y, tl_x:br_x]).copy()
                 # print '\nroi: \n', roi
                 # rospy.sleep(100)
-                if len(roi) > 0:
+                if np.any(roi):
                     depth_distances.append(np.max(roi))
                     # print "\nGot Depth\n"
 
@@ -389,7 +389,9 @@ class Camera():
                     break
 
         # print('distance (crowflies) from camera to point: {}m'.format(depth_distances))
-        for i in range(len(self.xs)):
+        for i in range(len(depth_distances)):
+            # print "\nTotal depths: ",len(depth_distances)
+            # print "\ni = ",i
             ray, pose = self.process_ray((self.xs[i], self.ys[i]), depth_distances[i])
             if self.choice == "real":
                 ''' NOTE: The Real Kinect produces values in mm while ROS operates in m. '''
@@ -411,7 +413,7 @@ def main():
     try:
 
         rospy.init_node('depth_from_object', anonymous=True)
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(25)
         # Contains the centroids of the obj bounding boxes
         rospy.wait_for_service("/get_predictions")
 
@@ -439,12 +441,12 @@ def main():
             print '\nUpdating YOLO predictions...\n'
             gip_service = rospy.ServiceProxy("/get_predictions", yolo_srv)
             response = gip_service()
-            print '\nCentroid of onions: [x1,x2...],[y1,y2...] \n', response.centx, response.centy
+            # print '\nCentroid of onions: [x1,x2...],[y1,y2...] \n', response.centx, response.centy
             camera.save_response(response)
-            print "\nIs updated: ",camera.is_updated,"\tFound objects: ", camera.found_objects
+            # print "\nIs updated: ",camera.is_updated,"\tFound objects: ", camera.found_objects
             if camera.is_updated and camera.found_objects:    
                 camera.OblobsPublisher()
-            # rate.sleep()
+            rospy.sleep(5)
         # rospy.spin()
 
     except rospy.ROSInterruptException:
