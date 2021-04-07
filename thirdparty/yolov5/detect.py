@@ -119,7 +119,7 @@ class YOLO():
             
         # print('**** pred: ',pred)
         ''' Sorting the bounding boxes according to ascending x values '''
-        if len(pred)>0:
+        if pred[0] != None:
             pred[0] = pred[0].cpu().numpy()
             pred[0] = pred[0][pred[0][:,0].argsort()]
             pred[0] = torch.from_numpy(pred[0])
