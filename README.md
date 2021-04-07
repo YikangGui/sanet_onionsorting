@@ -22,8 +22,6 @@ The following are the steps to be followed to get this package working:
    
   2.) Clone this package and catkin_make within catkin_ws dir.
   
-  ### Note: There are some files with absolute paths of directories/files used within them. If you get a FileNotFound/DirectoryNotFound error, please open the corresponding file and check. I'm in the process of converting them to relative paths.
-  
   3.) For the location of the camera used in this package, check [this link](https://github.com/thinclab/iai_kinect2/blob/master/kinect2_bridge/launch/rviz_tf.launch) if you're using a real kinect or [this link](https://github.com/thinclab/kinect_v2_udrf/blob/master/kinect_v2/launch/gazebo.launch) if you're using [this kinect_v2 package](https://github.com/thinclab/kinect_v2_udrf) with Gazebo.
   ### Note: If you plan to use your kinect elsewhere, you have to change the coordinates accordingly in the static_transform publisher and the kinect_v2_standalong_physical.urdf.xacro file.
   
