@@ -23,6 +23,9 @@ The following are the steps to be followed to get this package working:
   2.) Clone this package and catkin_make within catkin_ws dir.
   
   3.) For the location of the camera used in this package, check [this link](https://github.com/thinclab/iai_kinect2/blob/master/kinect2_bridge/launch/rviz_tf.launch) if you're using a real kinect or [this link](https://github.com/thinclab/kinect_v2_udrf/blob/master/kinect_v2/launch/gazebo.launch) if you're using [this kinect_v2 package](https://github.com/thinclab/kinect_v2_udrf) with Gazebo.
+  
+   - Check sanet_onionsorting/thirdparty/yolov5/requirements.txt and make sure you have the latest version of all those dependencies installed correctly for yolo to work.
+   - Also, you need weights files to run yolo. Make sure you get the right weights file and put it in yolov5/weights.
   ### Note: If you plan to use your kinect elsewhere, you have to change the coordinates accordingly in the static_transform publisher and the kinect_v2_standalong_physical.urdf.xacro file.
   
   4.) 
