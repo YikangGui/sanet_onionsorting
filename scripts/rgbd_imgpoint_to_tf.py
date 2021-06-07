@@ -333,13 +333,13 @@ class Camera():
             # Small ROI around clicked point grows larger if no depth value found
             for bbox_width in range(20, int(self.latest_depth_32FC1.shape[0]/3), 5):
                 tl_x = clamp(x-bbox_width/2, 0,
-                             self.latest_depth_32FC1.shape[0])
+                             self.latest_depth_32FC1.shape[1])
                 br_x = clamp(x+bbox_width/2, 0,
-                             self.latest_depth_32FC1.shape[0])
+                             self.latest_depth_32FC1.shape[1])
                 tl_y = clamp(y-bbox_width/2, 0,
-                             self.latest_depth_32FC1.shape[1])
+                             self.latest_depth_32FC1.shape[0])
                 br_y = clamp(y+bbox_width/2, 0,
-                             self.latest_depth_32FC1.shape[1])
+                             self.latest_depth_32FC1.shape[0])
                 # print('\n x, y, tl_x, tl_y, br_x, br_y: ',(x, y), (tl_x, tl_y, br_x, br_y))
                 roi = self.latest_depth_32FC1[tl_y:br_y, tl_x:br_x]
                 depth_distance = np.median(roi)
@@ -369,13 +369,13 @@ class Camera():
             roi = []
             for bbox_width in range(20, int(self.latest_depth_32FC1.shape[0]/3), 5):
                 tl_x = int(clamp(self.xs[i]-bbox_width/2,
-                                 0, self.latest_depth_32FC1.shape[0]))
+                                 0, self.latest_depth_32FC1.shape[1]))
                 br_x = int(clamp(self.xs[i]+bbox_width/2,
-                                 0, self.latest_depth_32FC1.shape[0]))
+                                 0, self.latest_depth_32FC1.shape[1]))
                 tl_y = int(clamp(self.ys[i]-bbox_width/2,
-                                 0, self.latest_depth_32FC1.shape[1]))
+                                 0, self.latest_depth_32FC1.shape[0]))
                 br_y = int(clamp(self.ys[i]+bbox_width/2,
-                                 0, self.latest_depth_32FC1.shape[1]))
+                                 0, self.latest_depth_32FC1.shape[0]))
                 # print '\n x, y, tl_x, tl_y, br_x, br_y: ',self.xs[i], self.ys[i], tl_x, tl_y, br_x, br_y
                 roi = (self.latest_depth_32FC1[tl_y:br_y, tl_x:br_x]).copy()
                 # print '\nroi: \n', roi
