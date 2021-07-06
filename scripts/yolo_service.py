@@ -24,6 +24,7 @@ same_flag = 0
 rgb_mem = None
 depth_mem = None
 weights = None
+camera = None
 
 def grabrgb(msg):
 
@@ -44,8 +45,18 @@ def getpred(msg):
     if rgb_mem is not None: 
         # thisimage = np.frombuffer(rgb_mem.data, dtype=np.uint8).reshape(rgb_mem.height, rgb_mem.width, -1).astype('float32')
         # print("\nThis image shape: \n",np.shape(thisimage))
-        output = y.detect(rgb_mem)
         # print('output:   ',output)
+
+        if (camera == "realsense"):
+            # print("Switching to bgr!")
+            rgb_origin = np.frombuffer(rgb_mem.data, dtype=np.uint8).reshape(rgb_mem.height, rgb_mem.width, -1).copy()
+            rgb = np.swapaxes(rgb_origin, 0, 2)
+            bgr = np.array([rgb[2], rgb[1], rgb[0]])
+            bgr = np.swapaxes(bgr, 0, 2)
+            bgr = bgr.reshape(-1).tobytes()
+            rgb_mem.data = bgr
+
+        output = y.detect(rgb_mem)
         if output is not None:
             if len(output) > 0:   
                 for det in output:
@@ -59,7 +70,7 @@ def getpred(msg):
                         centx, centy = int((tlx+brx)/2), int((tly+bry)/2)
                         if (int(cls) == 0 or int(cls) == 1):
                             # print("\ntlx, tly, brx, bry, cls: ",tlx, tly, brx, bry, int(cls))
-                            # print(f"\nCentroid: {centx}, {centy}")
+                            print(f"\nCentroid: {centx}, {centy}")
                             centxs.append(centx)
                             centys.append(centy)
                             colors.append(cls)
@@ -80,7 +91,7 @@ def getpred(msg):
 
 
 def main():
-    global weights
+    global weights, camera
     try:
         rospy.init_node("yolo_service")
         rospy.loginfo("Yolo service started")
@@ -89,19 +100,30 @@ def main():
             print("Default weights chosen as gazebo weights")
         else:
             choice = sys.argv[1]
+            camera = sys.argv[2]
 
         if (choice == "real"):
             weights = "best_realkinect.pt"
             # for kinect v2
-            print(f"{weights} weights selected with real kinect")
-            rospy.Subscriber("/kinect2/hd/image_color", Image, grabrgb)
+            print(f"{weights} weights selected with real {camera} camera")
+            if (camera == "kinect"):
+                rospy.Subscriber("/kinect2/hd/image_color_rect", Image, grabrgb)
+            elif (camera == "realsense"):
+                rospy.Subscriber("/camera/color/image_raw", Image, grabrgb)
+            else:
+                raise ValueError("Wrong camera name")
             # for kinect v2
             # rospy.Subscriber("/kinect2/hd/points", Image, grabdepth)
         elif (choice == "gazebo"):
             weights = "best_gazebokinect.pt"
             # for kinect gazebo
-            print(f"{weights} weights selected with gazebo kinect")
-            rospy.Subscriber("/kinect_V2/rgb/image_raw", Image, grabrgb)
+            print(f"{weights} weights selected with gazebo")
+            if (camera == "kinect"):
+                rospy.Subscriber("/kinect_V2/rgb/image_raw", Image, grabrgb)
+            elif (camera == "realsense"):
+                rospy.Subscriber("/camera/color/image_raw", Image, grabrgb)
+            else:
+                raise ValueError("Wrong camera name")
             # for kinect gazebo
             # rospy.Subscriber("/kinect_V2/depth/points", Image, grabdepth)
         else:

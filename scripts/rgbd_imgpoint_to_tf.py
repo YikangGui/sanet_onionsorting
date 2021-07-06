@@ -250,6 +250,11 @@ class Camera():
         """
         return self.camera_model.projectPixelTo3dRay(self.camera_model.rectifyPoint(uv_rect))
 
+    def mkmat(self, rows, cols, L):
+        mat = np.matrix(L, dtype='float64')
+        mat.resize((rows,cols))
+        return mat
+
     def get_position_from_ray(self, ray, depth):
         """
         @brief      The 3D position of the object (in the camera frame) from a camera ray and depth value
@@ -367,7 +372,7 @@ class Camera():
         # Small ROI around clicked point grows larger if no depth value found
         for i in range(len(self.xs)):
             roi = []
-            for bbox_width in range(20, int(self.latest_depth_32FC1.shape[0]/3), 5):
+            for bbox_width in range(5, int(self.latest_depth_32FC1.shape[0]/3), 5):
                 tl_x = int(clamp(self.xs[i]-bbox_width/2,
                                  0, self.latest_depth_32FC1.shape[1]))
                 br_x = int(clamp(self.xs[i]+bbox_width/2,
@@ -376,15 +381,19 @@ class Camera():
                                  0, self.latest_depth_32FC1.shape[0]))
                 br_y = int(clamp(self.ys[i]+bbox_width/2,
                                  0, self.latest_depth_32FC1.shape[0]))
-                # print '\n x, y, tl_x, tl_y, br_x, br_y: ',self.xs[i], self.ys[i], tl_x, tl_y, br_x, br_y
+                print ('\n x, y, tl_x, tl_y, br_x, br_y: ',self.xs[i], self.ys[i], tl_x, tl_y, br_x, br_y)
                 roi = (self.latest_depth_32FC1[tl_y:br_y, tl_x:br_x]).copy()
+		roi = np.ma.masked_equal(roi, 0)
+
                 # print '\nroi: \n', roi
                 # rospy.sleep(100)
                 if np.any(roi):
-                    depth_distances.append(np.max(roi))
+                    print(np.max(roi), np.min(roi))
+                    depth_distances.append((np.max(roi) + np.min(roi)) / 2.0)
                     # print "\nGot Depth\n"
 
-                if not np.isnan(depth_distances).any():
+#                if not np.isnan(depth_distances).any():
+                if np.min(roi) > 0.0:
                     # print "\nNo Nan values in depth values\n"
                     break
 
@@ -398,8 +407,12 @@ class Camera():
                 self.rays.append(np.array(ray)/1000)
                 self.poses.append(np.array(pose)/1000)
             else:
-                self.rays.append(ray)
-                self.poses.append(pose)
+                if (self.camera_name == "kinect"):
+                    self.rays.append(ray)
+                    self.poses.append(pose)
+                else:
+                    self.rays.append(np.array(ray)/1000)
+                    self.poses.append(np.array(pose)/1000)
         # print '\n(x,y): ',self.xs,self.ys
         # print '\n3D pose: ', self.poses
 
@@ -422,19 +435,33 @@ def main():
             choice = "real"
         else:
             choice = sys.argv[1]
-            print "\n{} kinect chosen".format(choice)
+            camera_name = sys.argv[2]
+            print "\n{} {} chosen".format(choice, camera_name)
 
         if (choice == "real"):
-            rgbtopic = '/kinect2/hd/image_color_rect'
-            depthtopic = '/kinect2/hd/image_depth_rect'
-            camerainfo = '/kinect2/hd/camera_info'
+            if (camera_name == "kinect"):
+                rgbtopic = '/kinect2/hd/image_color_rect'
+                depthtopic = '/kinect2/hd/image_depth_rect'
+                camerainfo = '/kinect2/hd/camera_info'
+            elif (camera_name == "realsense"):
+                rgbtopic = '/camera/color/image_raw'
+                depthtopic = '/camera/aligned_depth_to_color/image_raw'
+                camerainfo = '/camera/color/camera_info'
+
         elif (choice == "gazebo"):
-            rgbtopic = '/kinect_V2/rgb/image_raw'
-            depthtopic = '/kinect_V2/depth/image_raw'
-            camerainfo = '/kinect_V2/rgb/camera_info'
+            if (camera_name == "kinect"):
+                rgbtopic = '/kinect_V2/rgb/image_raw'
+                depthtopic = '/kinect_V2/depth/image_raw'
+                camerainfo = '/kinect_V2/rgb/camera_info'
+            elif (camera_name == "realsense"):
+                rgbtopic = '/camera/color/image_raw'
+                depthtopic = '/camera/depth/image_raw'
+                camerainfo = '/camera/color/camera_info'
+            else:
+                raise ValueError("Wrong camera name.")
 
 
-        camera = Camera('kinectv2', rgbtopic, depthtopic, camerainfo, choice)
+        camera = Camera(camera_name, rgbtopic, depthtopic, camerainfo, choice)
 
         while not rospy.is_shutdown():
 
