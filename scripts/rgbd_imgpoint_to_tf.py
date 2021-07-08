@@ -383,7 +383,8 @@ class Camera():
                                  0, self.latest_depth_32FC1.shape[0]))
                 print ('\n x, y, tl_x, tl_y, br_x, br_y: ',self.xs[i], self.ys[i], tl_x, tl_y, br_x, br_y)
                 roi = (self.latest_depth_32FC1[tl_y:br_y, tl_x:br_x]).copy()
-		roi = np.ma.masked_equal(roi, 0)
+		
+                roi = np.ma.masked_equal(roi, 0)
 
                 # print '\nroi: \n', roi
                 # rospy.sleep(100)
@@ -392,10 +393,13 @@ class Camera():
                     depth_distances.append((np.max(roi) + np.min(roi)) / 2.0)
                     # print "\nGot Depth\n"
 
-#                if not np.isnan(depth_distances).any():
-                if np.min(roi) > 0.0:
-                    # print "\nNo Nan values in depth values\n"
-                    break
+                if self.camera_name == "realsense":
+                    if not np.isnan(depth_distances).any():
+                        break
+                else:
+                    if np.min(roi) > 0.0:
+                        # print "\nNo Nan values in depth values\n"
+                        break
 
         # print('distance (crowflies) from camera to point: {}m'.format(depth_distances))
         for i in range(len(depth_distances)):
