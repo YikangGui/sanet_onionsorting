@@ -107,12 +107,9 @@ def main():
                     help='Choose between real/gazebo for camera')
         parser.add_argument('--cam', dest='camera_name', default= 'kinect',
                     help='Choose between kinect/realsense camera')
-                    
+
         # parse the arguments
         args = parser.parse_args()
-        if args.help:
-            print("--choice takes one of two values: real or gazebo\n--cam takes one of two values: kinect or realsense\n")
-            rospy.signal_shutdown()
 
         if (args.choice == "real"):
             weights = "best_realkinect.pt"
