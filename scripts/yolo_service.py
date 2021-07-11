@@ -107,8 +107,7 @@ def main():
                     help='Choose between real/gazebo for camera')
         parser.add_argument('--cam', dest='camera_name', default= 'kinect',
                     help='Choose between kinect/realsense camera')
-        parser.add_argument('--help', dest='help', default= False, help='Provides a list of commands and usage')         
-
+                    
         # parse the arguments
         args = parser.parse_args()
         if args.help:
