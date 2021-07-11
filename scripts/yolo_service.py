@@ -95,39 +95,52 @@ def main():
     try:
         rospy.init_node("yolo_service")
         rospy.loginfo("Yolo service started")
-        if len(sys.argv) < 2:
-            weights = "best_gazebokinect.pt"   # Default weights
-            print("Default weights chosen as gazebo weights")
-        else:
-            choice = sys.argv[1]
-            camera = sys.argv[2]
 
-        if (choice == "real"):
+        import argparse
+
+        desc = "A ROS service to communicate with YOLOv5 and obtain the bounding boxes."
+        # create parser
+        parser = argparse.ArgumentParser(description = desc)
+
+        # add arguments to the parser
+        parser.add_argument('--choice', dest='choice', default= 'real',
+                    help='Choose between real/gazebo for camera')
+        parser.add_argument('--cam', dest='camera_name', default= 'kinect',
+                    help='Choose between kinect/realsense camera')
+        parser.add_argument('--help', dest='help', default= False, help='Provides a list of commands and usage')         
+
+        # parse the arguments
+        args = parser.parse_args()
+        if args.help:
+            print("--choice takes one of two values: real or gazebo\n--cam takes one of two values: kinect or realsense\n")
+            rospy.signal_shutdown()
+
+        if (args.choice == "real"):
             weights = "best_realkinect.pt"
             # for kinect v2
-            print(f"{weights} weights selected with real {camera} camera")
-            if (camera == "kinect"):
+            print(f"{weights} weights selected with real {args.camera_name} camera")
+            if (args.camera_name == "kinect"):
                 rospy.Subscriber("/kinect2/hd/image_color_rect", Image, grabrgb)
-            elif (camera == "realsense"):
+            elif (args.camera_name == "realsense"):
                 rospy.Subscriber("/camera/color/image_raw", Image, grabrgb)
             else:
                 raise ValueError("Wrong camera name")
             # for kinect v2
             # rospy.Subscriber("/kinect2/hd/points", Image, grabdepth)
-        elif (choice == "gazebo"):
+        elif (args.choice == "gazebo"):
             weights = "best_gazebokinect.pt"
             # for kinect gazebo
             print(f"{weights} weights selected with gazebo")
-            if (camera == "kinect"):
+            if (args.camera_name == "kinect"):
                 rospy.Subscriber("/kinect_V2/rgb/image_raw", Image, grabrgb)
-            elif (camera == "realsense"):
+            elif (args.camera_name == "realsense"):
                 rospy.Subscriber("/camera/color/image_raw", Image, grabrgb)
             else:
                 raise ValueError("Wrong camera name")
             # for kinect gazebo
             # rospy.Subscriber("/kinect_V2/depth/points", Image, grabdepth)
         else:
-            print(f"Unknown choice: {choice}. Please choose between real and gazebo.")
+            print(f"Unknown choice: {args.choice}. Please choose between real and gazebo.")
 
         service = rospy.Service("/get_predictions", yolo_srv, getpred)
 

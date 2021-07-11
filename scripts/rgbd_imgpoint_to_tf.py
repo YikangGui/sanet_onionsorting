@@ -26,13 +26,13 @@ from sensor_msgs.msg import Image, CameraInfo
 # from tf import TransformListener, transformations
 import tf2_ros
 import tf2_geometry_msgs
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, TransformStamped
 from sawyer_irl_project.msg import OBlobs
 from sanet_onionsorting.srv import yolo_srv
 
 
 class Camera():
-    def __init__(self, camera_name, rgb_topic, depth_topic, camera_info_topic, choice=None):
+    def __init__(self, camera_name, rgb_topic, depth_topic, camera_info_topic, choice=None, debug=False):
         """
         @brief      A class to obtain time synchronized RGB and Depth frames from a camera topic and find the
                     3D position of the point wrt the required frame of reference.
@@ -43,6 +43,9 @@ class Camera():
         @param      camera_info_topic  The topic that provides the camera information. 
         @param      choice             If the camera used is a real or simulated camera based on commandline arg.
         """
+        q = 1
+
+        self.debug = debug
         self.camera_name = camera_name
         self.rgb_topic = rgb_topic
         self.depth_topic = depth_topic
@@ -63,20 +66,9 @@ class Camera():
         tfBuffer = tf2_ros.Buffer()
         self.br = tf2_ros.TransformBroadcaster()
         self.lis = tf2_ros.TransformListener(tfBuffer)
-
         self.bridge = CvBridge()
 
         self.camera_model = image_geometry.PinholeCameraModel()
-
-
-        # self.marker_pub = rospy.Publisher('visualization_marker', Marker, queue_size=10)
-        # cv2.namedWindow("Image window", cv2.WINDOW_NORMAL)
-        # cv2.setMouseCallback("Image window", self.mouse_callback)
-        # self.br = tf.TransformBroadcaster()
-        # self.lis = tf.TransformListener()
-        # # Have we processed the camera_info and image yet?
-        # self.ready_ = False
-        q = 1
 
         self.pose3D_pub = rospy.Publisher('object_location', OBlobs, queue_size=q)
 
@@ -93,30 +85,38 @@ class Camera():
 
         rospy.loginfo('Camera {} initialised, {}, {}, {}'.format(self.camera_name, rgb_topic, depth_topic, camera_info_topic))
 
-    def save_response(self, response):
+    def save_response(self, response = None):
         '''
         @brief      A method that saves the latest yolo info.
 
         @param      response           The response message from the classifier, containing bounding box info.
         '''
 
-        if len(response.centx) == 1 and response.centx[0] == -1:
-            # If no objects are found in the image
-            ob = OBlobs()
-            ob.x = [-100]
-            ob.y = [-100]
-            ob.z = [-100]
-            ob.color = [-100]
-            self.pose3D_pub.publish(ob)
-            rospy.sleep(0.1)
-            print '\nNo onions found in the frame\n'
-            return
+        if self.debug:
+            # cv2.namedWindow("Image window", cv2.WINDOW_NORMAL)
+            self.marker_pub = rospy.Publisher('visualization_marker', Marker, queue_size=10)
+            cv2.imshow("Image window", self.latest_rgb)
+            # cv2.imshow("depth", depth_32FC1)
+            cv2.setMouseCallback("Image window", self.mouse_callback)
+            cv2.waitKey(0)
         else:
-            print '\nProcessing {0} onions info\n'.format(len(response.centx))
-            self.xs = response.centx
-            self.ys = response.centy
-            self.colors = response.color
-            self.found_objects = True
+            if len(response.centx) == 1 and response.centx[0] == -1:
+                # If no objects are found in the image
+                ob = OBlobs()
+                ob.x = [-100]
+                ob.y = [-100]
+                ob.z = [-100]
+                ob.color = [-100]
+                self.pose3D_pub.publish(ob)
+                rospy.sleep(0.1)
+                print '\nNo onions found in the frame\n'
+                return
+            else:
+                print '\nProcessing {0} onions info\n'.format(len(response.centx))
+                self.xs = response.centx
+                self.ys = response.centy
+                self.colors = response.color
+                self.found_objects = True
 
 
     def callback(self, rgb_msg, depth_msg, camera_info_msg):
@@ -147,19 +147,13 @@ class Camera():
         #     print "\n{} zeros in {} sized array".format(num_zeros,np.shape(depth_32FC1)[0]*np.shape(depth_32FC1)[1])
         # else: print "\nAll zeros\n"
 
-        # cv2.imshow("Image window", img)
-        # cv2.imshow("depth", depth_32FC1)
-
-        # cv2.setMouseCallback("Image window", self.mouse_callback)
-        # cv2.waitKey(1)
-
 
 
     def OblobsPublisher(self):
 
         # print "\nWe're in OblobsPublisher!!\n"
-
-        self.convertto3D()
+        if not self.debug:
+            self.convertto3D()
 
         # print "\nLen of poses is: ",len(self.poses)
 
@@ -167,8 +161,6 @@ class Camera():
 
             self.getCam2Worldtf()
 
-            # self.br.sendTransform(self.pose,(0,0,0,1),rospy.Time.now(),"clicked_object",self.camera_model.tfFrame())
-            # self.marker_pub.publish(self.generate_marker(rospy.Time(0), self.get_tf_frame(), self.pose))
             ob = OBlobs()
             ob.x = self.OBlobs_x
             ob.y = self.OBlobs_y
@@ -212,7 +204,7 @@ class Camera():
                                                         rospy.Duration(1.0))  # wait for 1 second for target frame to become available
             tf_point = tf2_geometry_msgs.do_transform_pose(
                 camerapoint, cam_to_root_tf)
-            # print '\n3D pose wrt world: ', tf_point
+            print '\n3D pose wrt world: ', tf_point
 
             self.OBlobs_x.append(tf_point.pose.position.x)
             self.OBlobs_y.append(tf_point.pose.position.y)
@@ -352,14 +344,16 @@ class Camera():
                 if not np.isnan(depth_distance):
                     break
 
-            # print('distance (crowflies) from camera to point: {:.2f}m'.format(depth_distance))
+            print('distance (crowflies) from camera to point: {:.2f}m'.format(depth_distance))
             self.ray, self.pose = self.process_ray((x, y), depth_distance)
-            # print "\n3D pose wrt camera: \n", self.pose
+            print "\n3D pose wrt camera: \n", self.pose
             if self.choice == "real":
                 ''' NOTE: The Real Kinect produces values in mm while ROS operates in m. '''
                 self.poses.append(np.array(self.pose)/1000)
+                self.OblobsPublisher()
             else:
                 self.poses.append(self.pose)
+                self.OblobsPublisher()
 
     def convertto3D(self):
         """
@@ -429,35 +423,42 @@ def main():
 
     try:
 
-        rospy.init_node('depth_from_object', anonymous=True)
-        rate = rospy.Rate(25)
-        # Contains the centroids of the obj bounding boxes
-        rospy.wait_for_service("/get_predictions")
+        import argparse
 
-        if len(sys.argv) < 2:
-            print "Default choice real kinect chosen"
-            choice = "real"
-        else:
-            choice = sys.argv[1]
-            camera_name = sys.argv[2]
-            print "\n{} {} chosen".format(choice, camera_name)
+        desc = "A ROS Node to transform a 2D point(s) on an image to its 3D world coordinates using RGB and Depth values obtained from an RGBD camera. Use --help for usage instructions."
+        # create parser
+        parser = argparse.ArgumentParser(description = desc)
 
-        if (choice == "real"):
-            if (camera_name == "kinect"):
+        # add arguments to the parser
+        parser.add_argument('--choice', dest='choice', default= 'real',
+                    help='Choose between real/gazebo for camera')
+        parser.add_argument('--cam', dest='camera_name', default= 'kinect',
+                    help='Choose between kinect/realsense camera')
+        parser.add_argument('--debug', dest='debug', default= False,
+                    help='Setting this True gives debug tools like click for location') 
+
+        # parse the arguments
+        args = parser.parse_args()
+        print "\n{} {} chosen".format(args.choice, args.camera_name)
+
+        if (args.choice == "real"):
+            if (args.camera_name == "kinect"):
                 rgbtopic = '/kinect2/hd/image_color_rect'
                 depthtopic = '/kinect2/hd/image_depth_rect'
                 camerainfo = '/kinect2/hd/camera_info'
-            elif (camera_name == "realsense"):
+            elif (args.camera_name == "realsense"):
                 rgbtopic = '/camera/color/image_raw'
                 depthtopic = '/camera/aligned_depth_to_color/image_raw'
                 camerainfo = '/camera/color/camera_info'
+            else:
+                raise ValueError("Wrong camera name.")
 
-        elif (choice == "gazebo"):
-            if (camera_name == "kinect"):
+        elif (args.choice == "gazebo"):
+            if (args.camera_name == "kinect"):
                 rgbtopic = '/kinect_V2/rgb/image_raw'
                 depthtopic = '/kinect_V2/depth/image_raw'
                 camerainfo = '/kinect_V2/rgb/camera_info'
-            elif (camera_name == "realsense"):
+            elif (args.camera_name == "realsense"):
                 rgbtopic = '/camera/color/image_raw'
                 depthtopic = '/camera/depth/image_raw'
                 camerainfo = '/camera/color/camera_info'
@@ -465,24 +466,36 @@ def main():
                 raise ValueError("Wrong camera name.")
 
 
-        camera = Camera(camera_name, rgbtopic, depthtopic, camerainfo, choice)
+        rospy.init_node('depth_from_object', anonymous=True)
+        rate = rospy.Rate(25)
+        if not args.debug:
+            # Contains the centroids of the obj bounding boxes
+            rospy.wait_for_service("/get_predictions")
+
+        camera = Camera(args.camera_name, rgbtopic, depthtopic, camerainfo, choice = args.choice, debug = args.debug)
 
         while not rospy.is_shutdown():
 
-            print '\nUpdating YOLO predictions...\n'
-            gip_service = rospy.ServiceProxy("/get_predictions", yolo_srv)
-            response = gip_service()
-            # print '\nCentroid of onions: [x1,x2...],[y1,y2...] \n', response.centx, response.centy
-            camera.save_response(response)
-            # print "\nIs updated: ",camera.is_updated,"\tFound objects: ", camera.found_objects
-            if camera.is_updated and camera.found_objects:    
-                camera.OblobsPublisher()
-            rospy.sleep(1)
-            # rate.sleep()
-        # rospy.spin()
+            if args.debug:
+                # print("We're in debug mode!")
+                while not camera.is_updated:
+                    rospy.sleep(1)
+                camera.save_response()
+            else:
+                print '\nUpdating YOLO predictions...\n'
+                gip_service = rospy.ServiceProxy("/get_predictions", yolo_srv)
+                response = gip_service()
+                # print '\nCentroid of onions: [x1,x2...],[y1,y2...] \n', response.centx, response.centy
+                camera.save_response(response)
+                # print "\nIs updated: ",camera.is_updated,"\tFound objects: ", camera.found_objects
+                if camera.is_updated and camera.found_objects:    
+                    camera.OblobsPublisher()
+                rospy.sleep(1)
+                # rate.sleep()
+            # rospy.spin()
 
     except rospy.ROSInterruptException:
-        rospy.loginfo("Shutting down")
+        rospy.signal_shutdown("Shutting down")
         cv2.destroyAllWindows()
 
 
