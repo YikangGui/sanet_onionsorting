@@ -137,7 +137,8 @@ def main():
             # rospy.Subscriber("/kinect_V2/depth/points", Image, grabdepth)
         else:
             print(f"Unknown choice: {args.choice}. Please choose between real and gazebo.")
-
+            
+        camera = args.camera_name
         service = rospy.Service("/get_predictions", yolo_srv, getpred)
 
     except rospy.ROSInterruptException:

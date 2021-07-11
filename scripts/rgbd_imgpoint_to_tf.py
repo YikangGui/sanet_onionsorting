@@ -204,7 +204,7 @@ class Camera():
                                                         rospy.Duration(1.0))  # wait for 1 second for target frame to become available
             tf_point = tf2_geometry_msgs.do_transform_pose(
                 camerapoint, cam_to_root_tf)
-            print '\n3D pose wrt world: ', tf_point
+            # print '\n3D pose wrt world: ', tf_point
 
             self.OBlobs_x.append(tf_point.pose.position.x)
             self.OBlobs_y.append(tf_point.pose.position.y)
@@ -375,7 +375,7 @@ class Camera():
                                  0, self.latest_depth_32FC1.shape[0]))
                 br_y = int(clamp(self.ys[i]+bbox_width/2,
                                  0, self.latest_depth_32FC1.shape[0]))
-                print ('\n x, y, tl_x, tl_y, br_x, br_y: ',self.xs[i], self.ys[i], tl_x, tl_y, br_x, br_y)
+                # print ('\n x, y, tl_x, tl_y, br_x, br_y: ',self.xs[i], self.ys[i], tl_x, tl_y, br_x, br_y)
                 roi = (self.latest_depth_32FC1[tl_y:br_y, tl_x:br_x]).copy()
 		
                 roi = np.ma.masked_equal(roi, 0)
@@ -383,7 +383,7 @@ class Camera():
                 # print '\nroi: \n', roi
                 # rospy.sleep(100)
                 if np.any(roi):
-                    print(np.max(roi), np.min(roi))
+                    # print(np.max(roi), np.min(roi))
                     depth_distances.append((np.max(roi) + np.min(roi)) / 2.0)
                     # print "\nGot Depth\n"
 
