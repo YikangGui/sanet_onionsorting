@@ -55,6 +55,12 @@ The following are the steps to be followed to get this package working:
       
         roslaunch kinect_v2 kinect_v2_full.launch
         
+  For Gazebo realsense:
+  
+        roslaunch realsense2_description d435.launch
+        
+  And then:
+        
         rosrun sanet_onionsorting yolo_service.py --choice gazebo --cam CAMERA
 
         rosrun sanet_onionsorting rgbd_imgpoint_to_tf.py --choice gazebo --cam CAMERA
