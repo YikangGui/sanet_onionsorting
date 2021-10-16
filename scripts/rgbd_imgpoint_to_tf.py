@@ -195,7 +195,7 @@ class Camera():
             camerapoint.pose.position.z = self.poses[i][2]
             # print "\nCamerapoint: \n", camerapoint
             tf_buffer = tf2_ros.Buffer(
-                rospy.Duration(1200.0))  # tf buffer length
+                rospy.Duration(1200.0))  # tf buffer length 
             tf_listener = tf2_ros.TransformListener(tf_buffer)
             cam_to_root_tf = tf_buffer.lookup_transform("root",  # target frame
                                                         self.get_tf_frame(),  # source frame
