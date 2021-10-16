@@ -31,23 +31,39 @@ The following are the steps to be followed to get this package working:
   ### Note: If you plan to use your camera elsewhere, you have to change the coordinates accordingly in the static_transform publisher and the kinect_v2_standalong_physical.urdf.xacro file or the d435_camera_standalong.urdf.xacro file in case of Realsense camera.
   
   4.) 
-  For the real camera, replace the word CAMERA with kinect or realsense in the following command arguments:
+  For the realsense camera, use the following commands:
+      
+      roslaunch realsense2_camera d435_real.launch
+      
+      roslaunch realsense2_camera d435_tf.launch
+      
+  For the kinect camera, use the following commands:
   
       roslaunch kinect2_bridge kinect2_bridge.launch
       
       roslaunch kinect2_bridge rviz_tf.launch
       
-      rosrun sanet_onionsorting yolo_service.py real CAMERA
+  For using YOLO with the real camera, replace the word CAMERA with kinect or realsense in the following command arguments:
       
-      rosrun sanet_onionsorting rgbd_imgpoint_to_tf.py real CAMERA
+      rosrun sanet_onionsorting yolo_service.py --choice real --cam CAMERA
+      
+      rosrun sanet_onionsorting rgbd_imgpoint_to_tf.py --choice real --cam CAMERA
+      
   For Gazebo kinect:
+  
       After launching your required simulation setup on Gazebo:
       
         roslaunch kinect_v2 kinect_v2_full.launch
         
-        rosrun sanet_onionsorting yolo_service.py gazebo CAMERA
+  For Gazebo realsense:
+  
+        roslaunch realsense2_description d435.launch
+        
+  And then:
+        
+        rosrun sanet_onionsorting yolo_service.py --choice gazebo --cam CAMERA
 
-        rosrun sanet_onionsorting rgbd_imgpoint_to_tf.py gazebo CAMERA
+        rosrun sanet_onionsorting rgbd_imgpoint_to_tf.py --choice gazebo --cam CAMERA
         
   5.) Now if you listen to /object_location topic, you get the 3D world coordinates of objects recognized by YOLO.
   
