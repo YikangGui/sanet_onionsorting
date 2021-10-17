@@ -87,7 +87,7 @@ class Camera():
 
     def save_response(self, response = None):
         '''
-        @brief      A method that saves the latest yolo info.
+        @brief      A method that saves the latest bbox info.
 
         @param      response           The response message from the classifier, containing bounding box info.
         '''
@@ -109,10 +109,10 @@ class Camera():
                 ob.color = [-100]
                 self.pose3D_pub.publish(ob)
                 rospy.sleep(0.1)
-                print '\nNo onions found in the frame\n'
+                print ('\nNo onions found in the frame\n')
                 return
             else:
-                print '\nProcessing {0} onions info\n'.format(len(response.centx))
+                print ('\nProcessing {0} onions info\n'.format(len(response.centx)))
                 self.xs = response.centx
                 self.ys = response.centy
                 self.colors = response.color
@@ -344,9 +344,9 @@ class Camera():
                 if not np.isnan(depth_distance):
                     break
 
-            print('distance (crowflies) from camera to point: {:.2f}m'.format(depth_distance))
+            # print('distance (crowflies) from camera to point: {:.2f}m'.format(depth_distance))
             self.ray, self.pose = self.process_ray((x, y), depth_distance)
-            print "\n3D pose wrt camera: \n", self.pose
+            # print "\n3D pose wrt camera: \n", self.pose
             if self.choice == "real":
                 ''' NOTE: The Real Kinect produces values in mm while ROS operates in m. '''
                 self.poses.append(np.array(self.pose)/1000)
@@ -482,7 +482,7 @@ def main():
                     rospy.sleep(1)
                 camera.save_response()
             else:
-                print '\nUpdating YOLO predictions...\n'
+                print '\nUpdating predictions...\n'
                 gip_service = rospy.ServiceProxy("/get_predictions", yolo_srv)
                 response = gip_service()
                 # print '\nCentroid of onions: [x1,x2...],[y1,y2...] \n', response.centx, response.centy

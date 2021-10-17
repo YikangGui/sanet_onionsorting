@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 # coding: utf8
+'''
+Author: Prasanth Suresh (ps32611@uga.edu)
+Owner: THINC Lab @ CS UGA
+
+Please make sure you provide credit if you are using this code.
+
+'''
+
 import sys
 from time import time
 

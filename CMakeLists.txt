@@ -58,6 +58,7 @@ find_package(catkin REQUIRED COMPONENTS
  add_service_files(
    FILES
    yolo_srv.srv
+   frcnn_srv.srv
  )
 
 ## Generate actions in the 'action' folder
