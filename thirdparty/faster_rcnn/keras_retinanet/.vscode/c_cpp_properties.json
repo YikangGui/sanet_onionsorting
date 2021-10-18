@@ -1,0 +1,35 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/prasanth/catkin_ws/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/prasanth/catkin_ws/src/gazebo_ros_link_attacher/include/**",
+        "/home/prasanth/catkin_ws/src/iai_kinect2/kinect2_bridge/include/**",
+        "/home/prasanth/catkin_ws/src/iai_kinect2/kinect2_calibration/include/**",
+        "/home/prasanth/catkin_ws/src/iai_kinect2/kinect2_registration/include/**",
+        "/home/prasanth/catkin_ws/src/RealSense2-D435/realsense2_camera/include/**",
+        "/home/prasanth/catkin_ws/src/RealSense2-D435/realsense_gazebo_plugin/include/**",
+        "/home/prasanth/catkin_ws/src/roboticsgroup_gazebo_plugins-1/include/**",
+        "/home/prasanth/catkin_ws/src/robotiq/robotiq_2f_gripper_action_server/include/**",
+        "/home/prasanth/catkin_ws/src/robotiq/robotiq_2f_gripper_control/include/**",
+        "/home/prasanth/catkin_ws/src/robotiq/robotiq_2f_gripper_gazebo_plugins/include/**",
+        "/home/prasanth/catkin_ws/src/robotiq/robotiq_3f_gripper_articulated_gazebo_plugins/include/**",
+        "/home/prasanth/catkin_ws/src/robotiq/robotiq_3f_gripper_control/include/**",
+        "/home/prasanth/catkin_ws/src/robotiq/robotiq_ethercat/include/**",
+        "/home/prasanth/catkin_ws/src/robotiq/robotiq_ft_sensor/include/**",
+        "/home/prasanth/catkin_ws/src/sawyer_simulator/sawyer_gazebo/include/**",
+        "/home/prasanth/catkin_ws/src/sawyer_simulator/sawyer_hardware_interface/include/**",
+        "/home/prasanth/catkin_ws/src/sawyer_simulator/sawyer_sim_controllers/include/**",
+        "/home/prasanth/catkin_ws/src/sns_ik/sns_ik_lib/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}

@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import keras
+import tensorflow.keras
 
 import numpy as np
 import math
 
 
-class PriorProbability(keras.initializers.Initializer):
+class PriorProbability(tensorflow.keras.initializers.Initializer):
     """ Apply a prior probability to the weights.
     """
 

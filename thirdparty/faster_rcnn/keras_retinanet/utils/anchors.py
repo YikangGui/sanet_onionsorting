@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 import numpy as np
-import keras
+import tensorflow.keras
 
 from ..utils.compute_overlap import compute_overlap
 
@@ -45,8 +45,8 @@ The default anchor parameters.
 AnchorParameters.default = AnchorParameters(
     sizes   = [32, 64, 128, 256, 512, 1024, 1440, 1640],
     strides = [8, 16, 32, 64, 128, 160, 256, 512],
-    ratios  = np.array([0.25, 0.408, 0.777, 1.0, 1.288, 2.449, 4.0], keras.backend.floatx()),#np.array([0.5, 1, 2], keras.backend.floatx()),
-    scales  = np.array([1.047, 1.298, 1.65], keras.backend.floatx()), #np.array([2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)], keras.backend.floatx()),
+    ratios  = np.array([0.25, 0.408, 0.777, 1.0, 1.288, 2.449, 4.0], tensorflow.keras.backend.floatx()),#np.array([0.5, 1, 2], tensorflow.keras.backend.floatx()),
+    scales  = np.array([1.047, 1.298, 1.65], tensorflow.keras.backend.floatx()), #np.array([2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)], tensorflow.keras.backend.floatx()),
 )
 
 
@@ -85,8 +85,8 @@ def anchor_targets_bbox(
 
     batch_size = len(image_group)
 
-    regression_batch  = np.zeros((batch_size, anchors.shape[0], 4 + 1), dtype=keras.backend.floatx())
-    labels_batch      = np.zeros((batch_size, anchors.shape[0], num_classes + 1), dtype=keras.backend.floatx())
+    regression_batch  = np.zeros((batch_size, anchors.shape[0], 4 + 1), dtype=tensorflow.keras.backend.floatx())
+    labels_batch      = np.zeros((batch_size, anchors.shape[0], num_classes + 1), dtype=tensorflow.keras.backend.floatx())
 
     # compute labels and regression targets
     for index, (image, annotations) in enumerate(zip(image_group, annotations_group)):

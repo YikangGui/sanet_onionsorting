@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import keras
-from keras.applications import mobilenet
-from keras.utils import get_file
+import tensorflow.keras
+from tensorflow.keras.applications import mobilenet
+from tensorflow.keras.utils import get_file
 from ..utils.image import preprocess_image
 
 from . import retinanet
@@ -38,14 +38,14 @@ class MobileNetBackbone(Backbone):
         """ Download pre-trained weights for the specified backbone name.
         This name is in the format mobilenet{rows}_{alpha} where rows is the
         imagenet shape dimension and 'alpha' controls the width of the network.
-        For more info check the explanation from the keras mobilenet script itself.
+        For more info check the explanation from the tensorflow.keras mobilenet script itself.
         """
 
         alpha = float(self.backbone.split('_')[1])
         rows = int(self.backbone.split('_')[0].replace('mobilenet', ''))
 
         # load weights
-        if keras.backend.image_data_format() == 'channels_first':
+        if tensorflow.keras.backend.image_data_format() == 'channels_first':
             raise ValueError('Weights for "channels_last" format '
                              'are not available.')
         if alpha == 1.0:
@@ -93,14 +93,14 @@ def mobilenet_retinanet(num_classes, backbone='mobilenet224_1.0', inputs=None, m
 
     # choose default input
     if inputs is None:
-        inputs = keras.layers.Input((None, None, 3))
+        inputs = tensorflow.keras.layers.Input((None, None, 3))
 
     backbone = mobilenet.MobileNet(input_tensor=inputs, alpha=alpha, include_top=False, pooling=None, weights=None)
 
     # create the full model
     layer_names = ['conv_pw_5_relu', 'conv_pw_11_relu', 'conv_pw_13_relu']
     layer_outputs = [backbone.get_layer(name).output for name in layer_names]
-    backbone = keras.models.Model(inputs=inputs, outputs=layer_outputs, name=backbone.name)
+    backbone = tensorflow.keras.models.Model(inputs=inputs, outputs=layer_outputs, name=backbone.name)
 
     # invoke modifier if given
     if modifier:

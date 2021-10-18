@@ -114,7 +114,7 @@ def _open_for_csv(path):
 class CSVGenerator(Generator):
     """ Generate data for a custom CSV dataset.
 
-    See https://github.com/fizyr/keras-retinanet#csv-datasets for more information.
+    See https://github.com/fizyr/tensorflow.keras-retinanet#csv-datasets for more information.
     """
 
     def __init__(

@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import keras
+import tensorflow.keras
 from ..utils.coco_eval import evaluate_coco
 
 
-class CocoEval(keras.callbacks.Callback):
+class CocoEval(tensorflow.keras.callbacks.Callback):
     """ Performs COCO evaluation on each epoch.
     """
     def __init__(self, generator, tensorboard=None, threshold=0.05):

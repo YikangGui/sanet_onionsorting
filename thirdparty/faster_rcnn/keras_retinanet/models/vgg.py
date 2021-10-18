@@ -15,8 +15,8 @@ limitations under the License.
 """
 
 
-import keras
-from keras.utils import get_file
+import tensorflow.keras
+from tensorflow.keras.utils import get_file
 
 from . import retinanet
 from . import Backbone
@@ -34,13 +34,13 @@ class VGGBackbone(Backbone):
 
     def download_imagenet(self):
         """ Downloads ImageNet weights and returns path to weights file.
-        Weights can be downloaded at https://github.com/fizyr/keras-models/releases .
+        Weights can be downloaded at https://github.com/fizyr/tensorflow.keras-models/releases .
         """
         if self.backbone == 'vgg16':
-            resource = keras.applications.vgg16.vgg16.WEIGHTS_PATH_NO_TOP
+            resource = tensorflow.keras.applications.vgg16.vgg16.WEIGHTS_PATH_NO_TOP
             checksum = '6d6bbae143d832006294945121d1f1fc'
         elif self.backbone == 'vgg19':
-            resource = keras.applications.vgg19.vgg19.WEIGHTS_PATH_NO_TOP
+            resource = tensorflow.keras.applications.vgg19.vgg19.WEIGHTS_PATH_NO_TOP
             checksum = '253f8cb515780f3b799900260a226db6'
         else:
             raise ValueError("Backbone '{}' not recognized.".format(self.backbone))
@@ -80,13 +80,13 @@ def vgg_retinanet(num_classes, backbone='vgg16', inputs=None, modifier=None, **k
     """
     # choose default input
     if inputs is None:
-        inputs = keras.layers.Input(shape=(None, None, 3))
+        inputs = tensorflow.keras.layers.Input(shape=(None, None, 3))
 
     # create the vgg backbone
     if backbone == 'vgg16':
-        vgg = keras.applications.VGG16(input_tensor=inputs, include_top=False, weights=None)
+        vgg = tensorflow.keras.applications.VGG16(input_tensor=inputs, include_top=False, weights=None)
     elif backbone == 'vgg19':
-        vgg = keras.applications.VGG19(input_tensor=inputs, include_top=False, weights=None)
+        vgg = tensorflow.keras.applications.VGG19(input_tensor=inputs, include_top=False, weights=None)
     else:
         raise ValueError("Backbone '{}' not recognized.".format(backbone))
 

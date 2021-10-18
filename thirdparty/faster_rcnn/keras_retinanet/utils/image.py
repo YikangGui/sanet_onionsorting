@@ -46,7 +46,7 @@ def preprocess_image(x, mode='caffe'):
     Returns
         The input with the ImageNet mean subtracted.
     """
-    # mostly identical to "https://github.com/keras-team/keras-applications/blob/master/keras_applications/imagenet_utils.py"
+    # mostly identical to "https://github.com/tensorflow.keras-team/tensorflow.keras-applications/blob/master/keras_applications/imagenet_utils.py"
     # except for converting RGB -> BGR since we assume BGR already
 
     # covert always to float32 to keep compatibility with opencv

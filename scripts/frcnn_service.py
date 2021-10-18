@@ -50,7 +50,7 @@ def getpred(msg):
     centxs = []
     centys = []
     colors = []
-    f = FasterRCNN(weights, conf_thres = 0.9)
+    f = FasterRCNN(weights, conf_thres = 0.95)
     if rgb_mem is not None: 
         # thisimage = np.frombuffer(rgb_mem.data, dtype=np.uint8).reshape(rgb_mem.height, rgb_mem.width, -1).astype('float32')
         # print("\nThis image shape: \n",np.shape(thisimage))
@@ -70,7 +70,7 @@ def getpred(msg):
             if len(output) > 0:   
                 for det in output:
                     [box,score,label] = det
-                    print(f"Detection: {det}" )
+                    # print(f"Detection: {det}" )
                     # for [boxes, scores, labels] in det:
                     ''' 
                     NOTE: Useful link: https://miro.medium.com/max/597/1*85uPFWLrdVejJkWeie7cGw.png
@@ -81,7 +81,7 @@ def getpred(msg):
                     centx, centy = (tlx+brx)/2, (tly+bry)/2
                     if (int(label) == 0 or int(label) == 1):
                         # print("\ntlx, tly, brx, bry, label: ",tlx, tly, brx, bry, int(label))
-                        print(f"\nCentroid: {centx}, {centy}")
+                        # print(f"\nCentroid: {centx}, {centy}")
                         centxs.append(centx)
                         centys.append(centy)
                         colors.append(label)

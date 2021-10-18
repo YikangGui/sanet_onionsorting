@@ -6,8 +6,11 @@ with ROS by Prasanth Suresh(ps32611@uga.edu).
 Please make sure you provide credit if you are using this code.
 '''
 
+import sys
 from sys import builtin_module_names
+# from tensorflow import keras
 import keras
+# sys.path.append('/home/prasanth/catkin_ws/src/sanet_onionsorting/thirdparty/faster_rcnn/')
 from keras_retinanet import models
 from keras_retinanet.utils.image import read_image_bgr, preprocess_image, resize_image
 from keras_retinanet.utils.visualization import draw_box, draw_caption
@@ -29,6 +32,7 @@ import tensorflow as tf
 
 #setup_gpu(gpu)
 os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
 
 ################################################################################
 ########## Annotate images (add bounding boxes and labels) #####################
@@ -75,7 +79,7 @@ class FasterRCNN():
         prev_labels = []
         for box, score, label in zip(boxes[0], scores[0], labels[0]):
             # scores are sorted so we can break
-            print (label,score,box)
+            # print (label,score,box)
 
             if score < self.conf_thres:
                 break

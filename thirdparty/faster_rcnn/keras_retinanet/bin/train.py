@@ -21,8 +21,8 @@ import os
 import sys
 import warnings
 
-import keras
-import keras.preprocessing.image
+import tensorflow.keras
+import tensorflow.keras.preprocessing.image
 import tensorflow as tf
 
 # Allow relative imports when being executed as script.
@@ -105,7 +105,7 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
     # Keras recommends initialising a multi-gpu model on the CPU to ease weight sharing, and to prevent OOM errors.
     # optionally wrap in a parallel model
     if multi_gpu > 1:
-        from keras.utils import multi_gpu_model
+        from tensorflow.keras.utils import multi_gpu_model
         with tf.device('/cpu:0'):
             model = model_with_weights(backbone_retinanet(num_classes, num_anchors=num_anchors, modifier=modifier), weights=weights, skip_mismatch=True)
         training_model = multi_gpu_model(model, gpus=multi_gpu)
@@ -122,7 +122,7 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
             'regression'    : losses.smooth_l1(),
             'classification': losses.focal()
         },
-        optimizer=keras.optimizers.adam(lr=lr, clipnorm=0.001)
+        optimizer=tensorflow.keras.optimizers.adam(lr=lr, clipnorm=0.001)
     )
 
     return model, training_model, prediction_model
@@ -146,7 +146,7 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
     tensorboard_callback = None
 
     if args.tensorboard_dir:
-        tensorboard_callback = keras.callbacks.TensorBoard(
+        tensorboard_callback = tensorflow.keras.callbacks.TensorBoard(
             log_dir                = args.tensorboard_dir,
             histogram_freq         = 0,
             batch_size             = args.batch_size,
@@ -173,7 +173,7 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
     if args.snapshots:
         # ensure directory created first; otherwise h5py will error after epoch.
         makedirs(args.snapshot_path)
-        checkpoint = keras.callbacks.ModelCheckpoint(
+        checkpoint = tensorflow.keras.callbacks.ModelCheckpoint(
             os.path.join(
                 args.snapshot_path,
                 '{backbone}_{dataset_type}_{{epoch:02d}}.h5'.format(backbone=args.backbone, dataset_type=args.dataset_type)
@@ -186,7 +186,7 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
         checkpoint = RedirectModel(checkpoint, model)
         callbacks.append(checkpoint)
 
-    callbacks.append(keras.callbacks.ReduceLROnPlateau(
+    callbacks.append(tensorflow.keras.callbacks.ReduceLROnPlateau(
         monitor    = 'loss',
         factor     = 0.1,
         patience   = 2,
@@ -442,7 +442,7 @@ def main(args=None):
     # create object that stores backbone information
     backbone = models.backbone(args.backbone)
 
-    # make sure keras is the minimum required version
+    # make sure tensorflow.keras is the minimum required version
     check_keras_version()
 
     # optionally choose specific GPU

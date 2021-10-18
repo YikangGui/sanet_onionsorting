@@ -247,7 +247,7 @@ def main(args=None):
         args = sys.argv[1:]
     args = parse_args(args)
 
-    # make sure keras is the minimum required version
+    # make sure tensorflow.keras is the minimum required version
     check_keras_version()
 
     # create the generator

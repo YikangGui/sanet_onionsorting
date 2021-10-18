@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import keras
-from keras.utils import get_file
+import tensorflow.keras
+from tensorflow.keras.utils import get_file
 import keras_resnet
 import keras_resnet.models
 
@@ -40,8 +40,8 @@ class ResNetBackbone(Backbone):
     def download_imagenet(self):
         """ Downloads ImageNet weights and returns path to weights file.
         """
-        resnet_filename = 'ResNet-{}-model.keras.h5'
-        resnet_resource = 'https://github.com/fizyr/keras-models/releases/download/v0.0.1/{}'.format(resnet_filename)
+        resnet_filename = 'ResNet-{}-model.tensorflow.keras.h5'
+        resnet_resource = 'https://github.com/fizyr/tensorflow.keras-models/releases/download/v0.0.1/{}'.format(resnet_filename)
         depth = int(self.backbone.replace('resnet', ''))
 
         filename = resnet_filename.format(depth)
@@ -89,10 +89,10 @@ def resnet_retinanet(num_classes, backbone='resnet50', inputs=None, modifier=Non
     """
     # choose default input
     if inputs is None:
-        if keras.backend.image_data_format() == 'channels_first':
-            inputs = keras.layers.Input(shape=(3, None, None))
+        if tensorflow.keras.backend.image_data_format() == 'channels_first':
+            inputs = tensorflow.keras.layers.Input(shape=(3, None, None))
         else:
-            inputs = keras.layers.Input(shape=(None, None, 3))
+            inputs = tensorflow.keras.layers.Input(shape=(None, None, 3))
 
     # create the resnet backbone
     if backbone == 'resnet50':
