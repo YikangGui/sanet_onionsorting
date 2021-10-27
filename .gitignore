@@ -7,3 +7,5 @@ thirdparty/yolov5/weights/best_realkinect_new.pt
 thirdparty/faster_rcnn/examples/converted_model.h5
 thirdparty/faster_rcnn/keras_retinanet/bin/converted_model.h5
 thirdparty/faster_rcnn/keras_retinanet/bin/snapshots/resnet50_csv_100.h5
+*.pyc
+*.jpg

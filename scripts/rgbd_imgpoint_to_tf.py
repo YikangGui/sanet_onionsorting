@@ -490,7 +490,7 @@ def main():
                 # print "\nIs updated: ",camera.is_updated,"\tFound objects: ", camera.found_objects
                 if camera.is_updated and camera.found_objects:    
                     camera.OblobsPublisher()
-                rospy.sleep(0.5)
+                rospy.sleep(0.1)
                 # rate.sleep()
             # rospy.spin()
 
